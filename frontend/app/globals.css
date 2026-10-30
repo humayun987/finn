@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0A0A0A;
+  --card: #141414;
+  --border: #222222;
+  --muted: #888888;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  background: var(--bg);
+  color: #ffffff;
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* iOS safe-area */
+.pb-safe  { padding-bottom: env(safe-area-inset-bottom, 16px); }
+.pt-safe  { padding-top:    env(safe-area-inset-top,    0px);  }
+
+/* Hide scrollbar but keep scroll */
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* Tap highlight off */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
