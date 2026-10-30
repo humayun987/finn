@@ -36,3 +36,9 @@ app.include_router(chat_api.router,  prefix="/api/chat",      tags=["chat"])
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "finn-backend"}
+
+if __name__ == "__main__":
+    import uvicorn
+    import os
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
