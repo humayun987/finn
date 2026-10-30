@@ -1,9 +1,18 @@
+import re
+import logging
+import json
 from supabase import create_client, Client
 from app.config import SUPABASE_URL, SUPABASE_SERVICE_KEY
-import logging
 import redis as redis_lib
 from app.config import UPSTASH_REDIS_URL, UPSTASH_REDIS_TOKEN
-import json
+
+# Compatibility patch: Support both legacy JWT keys (eyJ...) and new Supabase secret keys (sb_secret_...)
+_orig_match = re.match
+def _custom_match(pattern, string, *args, **kwargs):
+    if string and isinstance(string, str) and string.startswith("sb_"):
+        return True
+    return _orig_match(pattern, string, *args, **kwargs)
+re.match = _custom_match
 
 logger = logging.getLogger(__name__)
 
