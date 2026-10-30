@@ -29,21 +29,21 @@ export default function ChatPage() {
     setLoading(true);
     try {
       const res: any = await api.chat.send(updated);
-      setMessages(prev => [...prev, { role: "assistant", content: res.response }]);
+      setMessages(prev => [...prev, { role: "assistant", content: res.response || "No response received." }]);
     } catch {
       setMessages(prev => [...prev, { role: "assistant", content: "Something went wrong. Try again." }]);
     } finally { setLoading(false); }
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col min-h-screen pb-36">
       <div className="sticky top-0 z-20 bg-[#0A0A0A]/95 backdrop-blur-md border-b border-[#222] px-4 pt-safe">
         <div className="py-3">
           <h1 className="text-lg font-bold">Ask FINN</h1>
           <p className="text-xs text-[#888]">Grounded in primary sources only</p>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-36">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             <div className={`max-w-[85%] px-4 py-3 text-sm leading-relaxed
@@ -63,18 +63,19 @@ export default function ChatPage() {
         )}
         <div ref={bottomRef} />
       </div>
-      {messages.length <= 1 && (
-        <div className="px-4 pb-2 flex gap-2 overflow-x-auto scrollbar-none">
-          {SUGGESTIONS.map((s, i) => (
-            <button key={i} onClick={() => send(s)}
-              className="whitespace-nowrap text-xs bg-[#141414] border border-[#222] text-[#aaa] px-3 py-2 rounded-xl flex-shrink-0">
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0A0A0A] border-t border-[#222] px-4 py-3 pb-safe max-w-md mx-auto">
-        <div className="flex gap-2 items-end">
+
+      <div className="fixed bottom-[60px] left-0 right-0 z-20 max-w-md mx-auto bg-[#0A0A0A]/95 backdrop-blur-md border-t border-[#222] px-4 py-2 space-y-2">
+        {messages.length <= 1 && (
+          <div className="flex gap-2 overflow-x-auto scrollbar-none py-1">
+            {SUGGESTIONS.map((s, i) => (
+              <button key={i} onClick={() => send(s)}
+                className="whitespace-nowrap text-xs bg-[#141414] border border-[#222] text-[#aaa] hover:text-white px-3 py-1.5 rounded-xl flex-shrink-0">
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2 items-center">
           <textarea value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
             placeholder="Ask about any NSE stock..." rows={1}

@@ -88,13 +88,55 @@ export default function ResearchPage() {
 
         {/* Fin snapshot strip */}
         <div className="grid grid-cols-3 gap-1.5 pb-3">
-          <FinCell label="Revenue" value={fin?.revenue_ttm_cr ? `₹${Math.round(fin.revenue_ttm_cr/100)}Cr` : "—"} />
-          <FinCell label="EBITDA Margin" value={fin?.ebitda_margin_pct ? `${fin.ebitda_margin_pct}%` : "—"}
-            trend={fin?.ebitda_margin_trend} />
-          <FinCell label="PAT" value={fin?.pat_ttm_cr ? `₹${Math.round(fin.pat_ttm_cr/100)}Cr` : "—"} />
-          <FinCell label="3Y Rev CAGR" value={fin?.revenue_cagr_3y_pct ? `${fin.revenue_cagr_3y_pct}%` : "—"} />
-          <FinCell label="ROE" value={fin?.roe_pct ? `${fin.roe_pct}%` : "—"} />
-          <FinCell label="D/E" value={fin?.de_ratio != null ? `${fin.de_ratio}×` : "—"} />
+          <FinCell
+            label="Revenue"
+            value={
+              (fin?.revenue_ttm_cr ?? (fin as any)?.revenue_cr) != null
+                ? `₹${Number(fin?.revenue_ttm_cr ?? (fin as any)?.revenue_cr).toLocaleString("en-IN")}Cr`
+                : "—"
+            }
+          />
+          <FinCell
+            label="EBITDA Margin"
+            value={
+              (fin?.ebitda_margin_pct ?? (fin as any)?.ebitda_margin) != null
+                ? `${fin?.ebitda_margin_pct ?? (fin as any)?.ebitda_margin}%`
+                : "—"
+            }
+            trend={fin?.ebitda_margin_trend}
+          />
+          <FinCell
+            label="PAT"
+            value={
+              (fin?.pat_ttm_cr ?? (fin as any)?.pat_cr) != null
+                ? `₹${Number(fin?.pat_ttm_cr ?? (fin as any)?.pat_cr).toLocaleString("en-IN")}Cr`
+                : "—"
+            }
+          />
+          <FinCell
+            label="3Y Rev CAGR"
+            value={
+              (fin?.revenue_cagr_3y_pct ?? (fin as any)?.revenue_cagr ?? (fin as any)?.cagr) != null
+                ? `${fin?.revenue_cagr_3y_pct ?? (fin as any)?.revenue_cagr ?? (fin as any)?.cagr}%`
+                : "—"
+            }
+          />
+          <FinCell
+            label="ROE"
+            value={
+              (fin?.roe_pct ?? (fin as any)?.roe ?? (fin as any)?.roce_pct) != null
+                ? `${fin?.roe_pct ?? (fin as any)?.roe ?? (fin as any)?.roce_pct}%`
+                : "—"
+            }
+          />
+          <FinCell
+            label="D/E"
+            value={
+              (fin?.de_ratio ?? (fin as any)?.debt_equity) != null
+                ? `${fin?.de_ratio ?? (fin as any)?.debt_equity}×`
+                : "—"
+            }
+          />
         </div>
 
         {/* Tabs */}

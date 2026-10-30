@@ -8,20 +8,43 @@ const ALL_CATS = [
 ];
 
 export default function AlertConfig({ onClose }: { onClose: () => void }) {
-  const [cfg, setCfg]     = useState({ price_threshold_pct: 5.0, volume_multiplier: 2.0, alert_categories: ["results","M&A","management_change","litigation","credit_rating"] });
+  const [cfg, setCfg] = useState<{
+    price_threshold_pct: number;
+    volume_multiplier: number;
+    alert_categories: string[];
+  }>({
+    price_threshold_pct: 5.0,
+    volume_multiplier: 2.0,
+    alert_categories: ["results", "M&A", "management_change", "litigation", "credit_rating"],
+  });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    api.portfolio.alerts().then((d: any) => setCfg(d)).catch(() => {});
+    api.portfolio.alerts()
+      .then((d: any) => {
+        if (d && typeof d === "object") {
+          setCfg({
+            price_threshold_pct: Number(d.price_threshold_pct) || 5.0,
+            volume_multiplier: Number(d.volume_multiplier) || 2.0,
+            alert_categories: Array.isArray(d.alert_categories)
+              ? d.alert_categories
+              : ["results", "M&A", "management_change", "litigation", "credit_rating"],
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const toggleCat = (cat: string) => {
-    setCfg(prev => ({
-      ...prev,
-      alert_categories: prev.alert_categories.includes(cat)
-        ? prev.alert_categories.filter(c => c !== cat)
-        : [...prev.alert_categories, cat],
-    }));
+    setCfg(prev => {
+      const current = Array.isArray(prev.alert_categories) ? prev.alert_categories : [];
+      return {
+        ...prev,
+        alert_categories: current.includes(cat)
+          ? current.filter(c => c !== cat)
+          : [...current, cat],
+      };
+    });
   };
 
   const save = async () => {
@@ -63,7 +86,7 @@ export default function AlertConfig({ onClose }: { onClose: () => void }) {
           <p className="text-xs text-[#888] mb-2">Alert me for these announcement types</p>
           <div className="flex flex-wrap gap-1.5">
             {ALL_CATS.map(cat => {
-              const active = cfg.alert_categories.includes(cat);
+              const active = (cfg.alert_categories || []).includes(cat);
               return (
                 <button key={cat} onClick={() => toggleCat(cat)}
                   className={`px-2.5 py-1 rounded-lg text-[10px] font-medium border transition-colors
