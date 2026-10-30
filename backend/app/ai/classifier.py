@@ -25,6 +25,26 @@ def classify_announcements_batch(announcements: List[Dict]) -> List[Dict]:
         results.extend(_classify_batch(batch))
     return results
 
+def _heuristic_classify(title: str, subject: str) -> tuple:
+    text = f"{title} {subject}".lower()
+    if any(k in text for k in ["financial result", "financials", "audited result", "unaudited result", "quarterly result", "earnings release", "results for"]):
+        return "results", "Quarterly financial results filed with exchange"
+    if any(k in text for k in ["acquisition", "merger", "demerger", "amalgamation", "takeover"]):
+        return "M&A", "Corporate M&A / restructuring disclosure"
+    if any(k in text for k in ["appointment", "resignation", "cessation", "superannuation", "director", "cfo", "ceo"]):
+        return "management_change", "Key management change / appointment disclosure"
+    if any(k in text for k in ["credit rating", "rating", "crisil", "icra", "care"]):
+        return "credit_rating", "Credit rating announcement"
+    if any(k in text for k in ["dividend", "interim dividend", "record date"]):
+        return "dividend", "Dividend declaration / record date"
+    if any(k in text for k in ["earnings call", "concall", "investor presentation"]):
+        return "earnings_call", "Earnings concall / investor presentation"
+    if any(k in text for k in ["litigation", "penalty", "order"]):
+        return "litigation", "Legal / regulatory order disclosure"
+    if any(k in text for k in ["fund raise", "qip", "rights issue"]):
+        return "fund_raise", "Fund raising announcement"
+    return "unclassified", (title or subject)[:100]
+
 def _classify_batch(batch: List[Dict]) -> List[Dict]:
     items_text = "\n".join(
         f"[{i}] TICKER:{a['ticker']} | TITLE:{(a.get('title') or '')[:120]} | SUBJECT:{(a.get('subject') or '')[:80]}"
@@ -66,17 +86,25 @@ Return format (one object per item, no extra text):
     cls_map = {c.get("index"): c for c in classifications if isinstance(c, dict)}
     output = []
     for i, ann in enumerate(batch):
-        cls = cls_map.get(i, {})
-        cat = cls.get("category", "unclassified")
+        cls = cls_map.get(i)
+        if cls:
+            cat = cls.get("category", "unclassified")
+            summary = cls.get("summary", (ann.get("title") or "")[:100])
+            conf = cls.get("confidence", 0.8)
+        else:
+            cat, summary = _heuristic_classify(ann.get("title", ""), ann.get("subject", ""))
+            conf = 0.7 if cat != "unclassified" else 0.3
+
         if cat not in CATEGORY_PRIORITY:
             cat = "unclassified"
+
         output.append({
             **ann,
             "category":    cat,
-            "summary":     cls.get("summary", (ann.get("title") or "")[:100]),
+            "summary":     summary,
             "priority":    CATEGORY_PRIORITY.get(cat, 9),
             "is_material": cat in MATERIAL_CATEGORIES,
-            "confidence":  cls.get("confidence", 0.5),
+            "confidence":  conf,
             "enrichment":  None,
         })
     output.sort(key=lambda x: x["priority"])
